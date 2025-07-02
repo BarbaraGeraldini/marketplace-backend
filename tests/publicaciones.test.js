@@ -1,50 +1,51 @@
-const request = require('supertest');
-const app = require('../index'); 
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import pool from './db/db.js';
+import usuariosRoutes from './routes/usuariosRoutes.js';
+import publicacionesRoutes from './routes/publicacionesRoutes.js';
+import mensajesRoutes from './routes/mensajesRouters.js';
 
-describe('Pruebas API REST', () => {
-    test('Registro de usuario (POST /api/usuarios)', async () => {
-        const response = await request(app)
-        .post('/api/usuarios')
-        .send({
-            nombre: 'test',
-            email: `test${Date.now()}@mail.com`,
-            password: '1234'
-        });
+dotenv.config();
 
-    expect(response.statusCode).toBe(201);
-    expect(response.body.usuario).toHaveProperty('id');
+const app = express();
+
+app.use(express.json());
+
+// 🚦 Configuración CORS: permite frontend local y deployado en Netlify
+app.use(cors({
+  origin: [
+    "http://localhost:5173", // Desarrollo local
+    "https://galeriadeartecreativa.netlify.app", // <--- TU URL de Netlify (sin / al final)
+  ],
+  credentials: true
+}));
+
+app.use('/api', usuariosRoutes);
+app.use('/api', publicacionesRoutes);
+app.use('/api', mensajesRoutes);
+
+app.get("/db-test", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error al conectar con la base de datos");
+  }
 });
 
-test('Login de usuario (POST /api/login)', async () => {
-    const response = await request(app)
-        .post('/api/login')
-        .send({
-            email: 'chucho@gmail.com',
-            password: 'admin'
-        });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toHaveProperty('token');
+// Ruta raíz
+app.get("/", (req, res) => {
+  res.send("Backend del Marketplace está funcionando correctamente.");
 });
 
-test('Obtener publicaciones sin token (GET /api/publicaciones)', async () => {
-    const response = await request(app).get('/api/publicaciones');
-    expect(response.statusCode).toBe(200);
-    expect(Array.isArray(response.body)).toBe(true);
-});
+// Solo escucha si no estás en modo test
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor funcionando en el puerto ${PORT}`);
+  });
+}
 
-test('Crear publicación sin token (POST /api/publicaciones)', async () => {
-    const response = await request(app)
-        .post('/api/publicaciones')
-        .send({
-            titulo: 'post sin token',
-            descripcion: 'esto no debe pasar',
-            precio: 1000,
-            imagen_url: 'http://ejemplo.com/img.jpg',
-            categoria_id: 1
-    });
-
-    expect(response.statusCode).toBe(401);
-    expect(response.body.error).toBeDefined();
-    });
-});
+export default app;
