@@ -6,13 +6,21 @@ import usuariosRoutes from './routes/usuariosRoutes.js';
 import publicacionesRoutes from './routes/publicacionesRoutes.js';
 import mensajesRoutes from './routes/mensajesRouters.js';
 
-
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+
+// 🚦 Configuración CORS: permite frontend local y futuro deploy (Netlify/Vercel)
+app.use(cors({
+  origin: [
+    "http://localhost:5173", // Desarrollo local
+    // Cuando subas el frontend, agrega aquí tu URL deployada, ejemplo:
+    // "https://galeria-creativa.netlify.app"
+  ],
+  credentials: true
+}));
 
 app.use('/api', usuariosRoutes);
 app.use('/api', publicacionesRoutes);
@@ -33,7 +41,6 @@ app.get("/", (req, res) => {
   res.send("Backend del Marketplace está funcionando correctamente.");
 });
 
-
 // Solo escucha si no estás en modo test
 if (process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 3000;
@@ -43,4 +50,3 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 export default app;
-
