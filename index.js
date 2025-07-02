@@ -10,17 +10,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(express.json());
-
-// 🚦 Configuración CORS: permite frontend local y futuro deploy (Netlify/Vercel)
 app.use(cors({
   origin: [
     "http://localhost:5173", // Desarrollo local
-    // Cuando subas el frontend, agrega aquí tu URL deployada, ejemplo:
-    // "https://galeria-creativa.netlify.app"
+    "https://galeriadeartecreativa.netlify.app" // <--- TU URL DE NETLIFY AQUÍ, SIN SLASH FINAL
   ],
   credentials: true
 }));
+
 
 app.use('/api', usuariosRoutes);
 app.use('/api', publicacionesRoutes);
