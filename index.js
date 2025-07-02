@@ -12,12 +12,11 @@ const app = express();
 
 app.use(express.json());
 
-// 🚦 Configuración CORS: permite frontend local y futuro deploy (Netlify/Vercel)
+// 🚦 Configuración CORS para desarrollo y producción:
 app.use(cors({
   origin: [
-    "http://localhost:5173", // Desarrollo local
-    // Cuando subas el frontend, agrega aquí tu URL deployada, ejemplo:
-    // "https://galeria-creativa.netlify.app"
+    "http://localhost:5173", // Localhost para desarrollo
+    // "https://TU-DOMINIO-FRONTEND.netlify.app" // <- Agrega tu URL de Netlify/Vercel aquí cuando hagas deploy del front
   ],
   credentials: true
 }));
@@ -26,6 +25,7 @@ app.use('/api', usuariosRoutes);
 app.use('/api', publicacionesRoutes);
 app.use('/api', mensajesRoutes);
 
+// Test de conexión a la DB
 app.get("/db-test", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");

@@ -7,16 +7,23 @@ import {
     borrarPublicacion
 } from '../models/publicacionesModel.js';
 
+// Listar todas las publicaciones
 export const listarPublicaciones = async (req, res) => {
   try {
     const publicaciones = await obtenerPublicaciones();
-    res.status(200).json(publicaciones || []); // Devuelve un array vacío si no hay publicaciones
+    res.status(200).json(publicaciones || []);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al obtener las publicaciones' });
+    // LOG DE ERROR DETALLADO
+    console.error("Error en listarPublicaciones:", error);
+    res.status(500).json({
+      error: 'Error al obtener las publicaciones',
+      detalle: error.message,
+      stack: error.stack // Esto ayuda mucho a encontrar el bug real en Render
+    });
   }
-}; // mostrar todas las publicaciones
+};
 
+// Mostrar una publicación por su ID
 export const detallePublicacion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -26,11 +33,12 @@ export const detallePublicacion = async (req, res) => {
     }
     res.status(200).json(publicacion);
   } catch (error) {
-    console.error(error);
+    console.error("Error en detallePublicacion:", error);
     res.status(500).json({ error: 'Error al obtener la publicación' });
   }
-}; // mostrar una publicación por su ID
+};
 
+// Crear nueva publicación (requiere autenticación)
 export const crearPublicacion = async (req, res) => {
     try {
         const { titulo, descripcion, precio, imagen_url, categoria_id } = req.body;
@@ -47,24 +55,26 @@ export const crearPublicacion = async (req, res) => {
             precio,
             imagen_url
         });
-        res.status(201).json(publicacion); // o el objeto que quieras devolver
+        res.status(201).json(publicacion);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al crear la publicación' });
+        console.error("Error en crearPublicacion:", error);
+        res.status(500).json({ error: 'Error al crear la publicación', detalle: error.message });
     }
-}; // crear nueva publicación (requiere autenticación)
+};
 
+// Mostrar publicaciones del usuario autenticado
 export const publicacionesUsuario = async (req, res) => {
     try {
         const usuario_id = req.user.id;
         const publicaciones = await obtenerPublicacionesPorUsuario(usuario_id);
         return res.status(200).json(publicaciones);
     } catch (error) {
-        console.error(error);
+        console.error("Error en publicacionesUsuario:", error);
         res.status(500).json({ error: 'Error al obtener las publicaciones del usuario' });
     }
-}; // mostrar publicaciones del usuario autenticado
+};
 
+// Editar publicación
 export const editarPublicacion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,10 +83,12 @@ export const editarPublicacion = async (req, res) => {
     const actualizada = await actualizarPublicacion(id, datos, usuario_id);
     res.json(actualizada);
   } catch (error) {
+    console.error("Error en editarPublicacion:", error);
     res.status(500).json({ error: "Error al editar publicación" });
   }
 };
 
+// Eliminar publicación
 export const eliminarPublicacion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -84,33 +96,10 @@ export const eliminarPublicacion = async (req, res) => {
     await borrarPublicacion(id, usuario_id);
     res.json({ message: "Publicación eliminada" });
   } catch (error) {
-    if (error.message.includes("No autorizado")) {
+    if (error.message && error.message.includes("No autorizado")) {
       return res.status(403).json({ error: "No autorizado para eliminar esta publicación" });
     }
-    console.error(error);
+    console.error("Error en eliminarPublicacion:", error);
     res.status(500).json({ error: "Error al eliminar publicación" });
   }
 };
-
-const agregarPublicacion = async (nuevaPublicacion, token) => {
-  try {
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/publicaciones`,
-      nuevaPublicacion,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    const nueva = res.data; // Asegúrate de que el backend devuelve la publicación creada
-    setPublicaciones((prev) => [nueva, ...prev]); // Agrega la nueva publicación al estado global
-    return nueva;
-  } catch (error) {
-    console.error("Error al agregar publicación:", error);
-    throw error;
-  }
-};
-
-
-
