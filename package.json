@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
+    "start": "node index.js",
     "test": "jest"
   },
   "keywords": [],
@@ -27,4 +28,3 @@
     "supertest": "^7.1.1"
   }
 }
-
