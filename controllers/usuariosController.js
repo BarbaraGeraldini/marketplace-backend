@@ -2,6 +2,7 @@
 import bcrypt from 'bcrypt';
 import { crearUsuario, buscarUsuarioPorEmail } from "../models/usuariosModel.js";
 import jwt from "jsonwebtoken";
+import pool from "../db/db.js"; // <-- IMPORTANTE para el GET
 
 const generarToken = (usuario) => {
   return jwt.sign({ id: usuario.id, email: usuario.email }, process.env.JWT_SECRET, {
@@ -9,6 +10,7 @@ const generarToken = (usuario) => {
   });
 };
 
+// REGISTRO DE USUARIO
 export const registrarUsuario = async (req, res) => {
     try {
         const { nombre, email, password } = req.body;
@@ -38,6 +40,7 @@ export const registrarUsuario = async (req, res) => {
     }
 }
 
+// LOGIN DE USUARIO
 export const loginUsuario = async (req, res) => {
   const { email, password } = req.body;
   // Busca el usuario por email
@@ -70,3 +73,14 @@ export const loginUsuario = async (req, res) => {
     }
   });
 }
+
+// GET: LISTAR TODOS LOS USUARIOS
+export const listarUsuarios = async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, nombre, email, fecha_registro FROM usuarios ORDER BY id");
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener usuarios" });
+  }
+};

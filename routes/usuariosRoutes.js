@@ -1,13 +1,16 @@
 // Define los endpoints
 import { Router } from 'express';
-import { registrarUsuario, loginUsuario } from '../controllers/usuariosController.js';
+import { registrarUsuario, loginUsuario, listarUsuarios } from '../controllers/usuariosController.js';
 
 const router = Router();
 
-// Ruta para registrar un nuevo usuario
+// GET: Listar todos los usuarios (para pruebas/demo)
+router.get('/usuarios', listarUsuarios);
+
+// POST: Registrar un nuevo usuario
 router.post('/usuarios', registrarUsuario);
 
-// Ruta para iniciar sesión
+// POST: Iniciar sesión
 router.post('/login', loginUsuario);
 
 export default router;
