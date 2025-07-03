@@ -1,4 +1,5 @@
 import { crearMensaje as crearMensajeDB, obtenerMensajesPorPublicacion } from "../models/mensajesModel.js";
+import pool from "../db/db.js"; // <--- Para usarlo en el GET general
 
 export const crearMensaje = async (req, res) => {
   try {
@@ -22,5 +23,19 @@ export const listarMensajesPorPublicacion = async (req, res) => {
     res.json(mensajes);
   } catch (error) {
     res.status(500).json({ error: "Error al obtener los mensajes" });
+  }
+};
+
+// 🚦 GET: Listar todos los mensajes (para admin/pruebas)
+export const listarTodosLosMensajes = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, contenido, publicacion_id, usuario_id, fecha_envio 
+      FROM mensajes 
+      ORDER BY fecha_envio DESC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener todos los mensajes" });
   }
 };
