@@ -18,6 +18,7 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(express.json());  // <--- ¡Agrega esta línea!
 
 app.use('/api', usuariosRoutes);
 app.use('/api', publicacionesRoutes);
